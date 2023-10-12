@@ -15,6 +15,7 @@ class WindowClass(QMainWindow, from_class):
         self.btnColor.clicked.connect(self.inputColor)
         self.btnFont.clicked.connect(self.inputFont)
         self.btnFile.clicked.connect(self.openFile)
+        
         self.lineEdit.returnPressed.connect(self.question)
         
     def question(self):
