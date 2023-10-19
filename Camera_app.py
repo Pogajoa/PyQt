@@ -1,6 +1,7 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5.QtMultimedia import QMediaPlaylist, QMediaPlayer, QMediaContent
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QSlider, QVBoxLayout, QWidget
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5 import uic
@@ -44,10 +45,71 @@ class WindowClass(QMainWindow, from_class):
         self.btnCapture.clicked.connect(self.capture)
         self.btnDraw.clicked.connect(self.clickDraw)
         self.count = 0
+        self.selected_color = None
         
-        self.rgb_sliders = [QSlider(Qt.Horizontal) for _ in range(3)]
-        self.hsv_sliders = [QSlider(Qt.Horizontal) for _ in range(3)]
-    
+        
+        self.redSlider.setRange(0, 255)
+        self.greenSlider.setRange(0, 255)
+        self.blueSlider.setRange(0, 255)
+
+        # self.redSlider.setSingleStep(1)
+        # self.greenSlider.setSingleStep(1)
+        # self.blueSlider.setSingleStep(1)
+        
+        self.hueSlider.setRange(0, 360)
+        self.saturationSlider.setRange(0, 100)
+        self.valueSlider.setRange(0, 100)
+        
+        self.redSlider.valueChanged.connect(self.update_image)
+        self.greenSlider.valueChanged.connect(self.update_image)
+        self.blueSlider.valueChanged.connect(self.update_image)
+        
+        self.hueSlider.valueChanged.connect(self.update_image)
+        self.saturationSlider.valueChanged.connect(self.update_image)
+        self.valueSlider.valueChanged.connect(self.update_image)
+        self.drawColorBtn.clicked.connect(self.selectColor)
+        self.clearBtn.clicked.connect(self.clearDrawing)
+        
+    def clearDrawing(self):
+        # self.pixmap.fill(Qt.white)
+        self.label.setPixmap(self.pixmap)
+        
+    def selectColor(self):
+        color = QColorDialog.getColor()
+        if color.isValid():
+            self.selected_color = color        
+            
+        
+    def update_image(self):
+        image = self.pixmap.toImage()
+        r, g, b = [self.redSlider.value(), self.greenSlider.value(), self.blueSlider.value()]
+        h, s, v = [self.hueSlider.value(), self.saturationSlider.value(), self.valueSlider.value()]
+        for y in range(image.height()):
+            for x in range(image.width()):
+                pixel_color = QColor(image.pixel(x, y))
+
+                # Adjust RGB values
+                pixel_color.setRed(min(255, max(0, pixel_color.red() + r)))
+                pixel_color.setGreen(min(255, max(0, pixel_color.green() + g)))
+                pixel_color.setBlue(min(255, max(0, pixel_color.blue() + b)))
+
+                # Convert to HSV color space
+                hsv = pixel_color.getHsv()
+                hue = hsv[0]
+                saturation = hsv[1]
+                value = hsv[2]
+                
+                hue = (hue + h) % 360
+                saturation = min(255, max(0, saturation + s))
+                value = min(255, max(0, value + v))
+                
+                # pixel_color.setRgb(red, green, blue)
+                pixel_color.setHsv(hue, saturation, value)
+                
+                image.setPixelColor(x, y, pixel_color)
+        self.label.setPixmap(QPixmap.fromImage(image))
+
+   
     def clickDraw(self):
         if self.drawOnPic == False:
             self.drawOnPic = True  
@@ -55,22 +117,27 @@ class WindowClass(QMainWindow, from_class):
         else:
             self.drawOnPic = False
             self.btnDraw.setText('Draw on picture')
-            
-    
     
     def mouseMoveEvent(self, event):
-        if self.x is None:
+        if self.drawOnPic == True:
+            if self.x is None:
+                self.x = event.x()
+                self.y = event.y()
+            
+            painter = QPainter(self.label.pixmap())
+            
+            # Create a QPen with the selected color
+            if self.selected_color != None:
+                pen = QPen(self.selected_color)
+                painter.setPen(pen)
+            
+            painter.drawLine(self.x, self.y, event.x(), event.y())
+            painter.end()
+            self.update()
+            
             self.x = event.x()
             self.y = event.y()
         
-        painter = QPainter(self.label.pixmap())
-        painter.drawLine(self.x, self.y, event.x(), event.y())
-        painter.end()
-        self.update()
-        
-        self.x = event.x()
-        self.y = event.y()
-    
     def mouseReleaseEvent(self, event):
         self.x = None
         self.y = None

@@ -36,7 +36,7 @@ class WindowClass(QMainWindow, from_class):
         
         self.x = event.x()
         self.y = event.y()
-
+    
     def mousePressEvent(self, e):
         click = 'Mouse Press: '        
         if e.button() == Qt.LeftButton:
