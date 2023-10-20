@@ -82,10 +82,10 @@
    <widget class="QTabWidget" name="tabWidget">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>560</y>
+      <x>90</x>
+      <y>620</y>
       <width>731</width>
-      <height>171</height>
+      <height>111</height>
      </rect>
     </property>
     <property name="currentIndex">
@@ -259,10 +259,10 @@
      <widget class="QPushButton" name="drawColorBtn">
       <property name="geometry">
        <rect>
-        <x>300</x>
-        <y>60</y>
+        <x>190</x>
+        <y>20</y>
         <width>101</width>
-        <height>25</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -272,10 +272,10 @@
      <widget class="QPushButton" name="clearBtn">
       <property name="geometry">
        <rect>
-        <x>180</x>
-        <y>60</y>
+        <x>600</x>
+        <y>20</y>
         <width>101</width>
-        <height>25</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
@@ -285,14 +285,40 @@
      <widget class="QPushButton" name="btnDraw">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>60</y>
+        <x>30</x>
+        <y>20</y>
         <width>141</width>
-        <height>25</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="text">
        <string>Draw on picture</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="saveRectBtn">
+      <property name="geometry">
+       <rect>
+        <x>310</x>
+        <y>20</y>
+        <width>151</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Save selected region</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="insertBtn">
+      <property name="geometry">
+       <rect>
+        <x>480</x>
+        <y>20</y>
+        <width>101</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Insert sign</string>
       </property>
      </widget>
     </widget>

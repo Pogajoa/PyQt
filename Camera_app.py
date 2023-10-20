@@ -26,7 +26,7 @@ class WindowClass(QMainWindow, from_class):
         self.btnCapture.hide()
         
         self.pixmap = QPixmap(self.label.width(), self.label.height())
-        self.pixmap.fill(Qt.white)
+        # self.pixmap.fill(Qt.white)
         
         self.label.setPixmap(self.pixmap)
         self.x, self.y = None, None
@@ -69,16 +69,91 @@ class WindowClass(QMainWindow, from_class):
         self.valueSlider.valueChanged.connect(self.update_image)
         self.drawColorBtn.clicked.connect(self.selectColor)
         self.clearBtn.clicked.connect(self.clearDrawing)
+        self.btnDraw.clicked.connect(self.startDrawing)
+        self.saveRectBtn.clicked.connect(self.saveArea)
         
-    def clearDrawing(self):
-        # self.pixmap.fill(Qt.white)
+        self.drawing = False
+        self.points  = []
+        
+    def startDrawing(self):
+        self.pixmap_origin = self.pixmap
+        self.drawing = True
+        self.points = []
+    
+    def saveArea(self):
+        if self.points:
+            path = QPainterPath()
+            path.moveTo(self.points[0])
+            for point in self.points[1:]:
+                path.lineTo(point)
+                
+            self.label.setPixmap(self.pixmap_origin)
+            rect = path.boundingRect().toRect()
+            image = self.pixmap.copy(rect)
+            image.save("drawn_area.png")
+
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and self.drawing:
+            self.points.append(event.pos())
+            self.updateDrawing()
+
+    
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton and self.drawing:
+            self.drawing = False
+            self.updateDrawing()
+            
+    
+    def mouseMoveEvent(self, event):
+        if self.drawing:
+            self.points.append(event.pos())
+            self.updateDrawing()
+            
+        # if self.drawOnPic == True:
+        #     if self.x is None:
+        #         self.x = event.x()
+        #         self.y = event.y()
+            
+        #     painter = QPainter(self.label.pixmap())
+            
+        #     # Create a QPen with the selected color
+        #     if self.selected_color != None:
+        #         pen = QPen(self.selected_color)
+        #         painter.setPen(pen)
+            
+        #     painter.drawLine(self.x, self.y, event.x(), event.y())
+        #     painter.end()
+            
+        #     self.update()
+            
+        #     self.x = event.x()
+        #     self.y = event.y()
+    
+    
+    def updateDrawing(self):
+        painter = QPainter(self.pixmap)
+        painter.drawPixmap(0, 0, self.label.pixmap())
+
+        if len(self.points) > 1:
+            pen = QPen()
+            pen.setColor(self.selected_color)
+            pen.setWidth(2)
+            painter.setPen(pen)
+            painter.drawPolyline(QPolygon(self.points))
+
         self.label.setPixmap(self.pixmap)
-        
+    
     def selectColor(self):
         color = QColorDialog.getColor()
         if color.isValid():
-            self.selected_color = color        
-            
+            self.selected_color = color 
+        
+     
+    def clearDrawing(self):
+        # self.pixmap.fill(Qt.white)
+        self.label.setPixmap(self.pixmap)
+                   
         
     def update_image(self):
         image = self.pixmap.toImage()
@@ -117,30 +192,7 @@ class WindowClass(QMainWindow, from_class):
         else:
             self.drawOnPic = False
             self.btnDraw.setText('Draw on picture')
-    
-    def mouseMoveEvent(self, event):
-        if self.drawOnPic == True:
-            if self.x is None:
-                self.x = event.x()
-                self.y = event.y()
-            
-            painter = QPainter(self.label.pixmap())
-            
-            # Create a QPen with the selected color
-            if self.selected_color != None:
-                pen = QPen(self.selected_color)
-                painter.setPen(pen)
-            
-            painter.drawLine(self.x, self.y, event.x(), event.y())
-            painter.end()
-            self.update()
-            
-            self.x = event.x()
-            self.y = event.y()
-        
-    def mouseReleaseEvent(self, event):
-        self.x = None
-        self.y = None
+
         
     def capture(self):
         self.now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -164,7 +216,7 @@ class WindowClass(QMainWindow, from_class):
             self.isRecStart = False 
             
             self.recordingStop()
-              
+             
     def recordingStart(self):
         self.record.running = True
         self.record.start()
@@ -183,9 +235,9 @@ class WindowClass(QMainWindow, from_class):
         
         if self.isRecStart == True:  
             self.writer.release()
-        
+    
     def updateCamera(self):
-        self.label.setText('Camera Runnning: ' + str(self.count))
+        # self.label.setText('Camera Runnning: ' + str(self.count))
         self.count += 1
         
         retval, self.image = self.video.read()
@@ -229,7 +281,7 @@ class WindowClass(QMainWindow, from_class):
     def cameraStop(self):
         self.camera.running = False  
         self.camera.count = 0
-        self.video.release
+        self.video.release()
         
         if self.isRecStart == True:
             self.writer.release()
