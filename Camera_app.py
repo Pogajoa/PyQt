@@ -71,27 +71,36 @@ class WindowClass(QMainWindow, from_class):
         self.clearBtn.clicked.connect(self.clearDrawing)
         self.btnDraw.clicked.connect(self.startDrawing)
         self.saveRectBtn.clicked.connect(self.saveArea)
-        
+        self.pixmap_origin = self.pixmap.copy() 
         self.drawing = False
         self.points  = []
         
     def startDrawing(self):
-        self.pixmap_origin = self.pixmap
         self.drawing = True
         self.points = []
     
+    
     def saveArea(self):
-        if self.points:
-            path = QPainterPath()
-            path.moveTo(self.points[0])
-            for point in self.points[1:]:
-                path.lineTo(point)
-                
-            self.label.setPixmap(self.pixmap_origin)
-            rect = path.boundingRect().toRect()
-            image = self.pixmap.copy(rect)
+        if self.points:     
+            rect = self.getBoundingBox()
+            image = self.pixmap_origin.copy(rect)  # 직사각형 영역만 복사
             image.save("drawn_area.png")
+        self.label.setPixmap(self.pixmap_origin)
 
+
+    def getBoundingBox(self):
+        if not self.points:
+            return QRect()
+
+        x_values = [point.x() for point in self.points]
+        y_values = [point.y() for point in self.points]
+
+        min_x = min(x_values)
+        max_x = max(x_values)
+        min_y = min(y_values)
+        max_y = max(y_values)
+
+        return QRect(min_x, min_y, max_x - min_x, max_y - min_y)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton and self.drawing:
@@ -151,8 +160,8 @@ class WindowClass(QMainWindow, from_class):
         
      
     def clearDrawing(self):
-        # self.pixmap.fill(Qt.white)
-        self.label.setPixmap(self.pixmap)
+        if self.points:
+            self.label.setPixmap(self.pixmap_origin)
                    
         
     def update_image(self):
@@ -301,6 +310,7 @@ class WindowClass(QMainWindow, from_class):
             self.pixmap = self.pixmap.scaled(self.label.width(), self.label.height())
             
             self.label.setPixmap(self.pixmap)
+            self.pixmap_origin = self.pixmap.copy() 
 
         elif file[0][-3:] == 'avi':
             cap = cv2.VideoCapture(file[0])
